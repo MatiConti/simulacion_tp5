@@ -56,8 +56,9 @@ derecha ("Source file changed") con un botón **Rerun**. Hay que apretarlo
 2. Apretá **Simular**. Mientras corre, los parámetros quedan bloqueados.
 3. Mirá los resultados en **"1. Resultados de la simulación"** y la
    integración de Euler en **"3. Integración numérica"**.
-4. En **"2. Vector de estado"** podés elegir desde qué hora mostrar filas y
-   cuántas, y exportar todo a Excel con el botón verde.
+4. En **"2. Vector de estado"** podés elegir desde qué hora mostrar filas (j)
+   y cuántas (i). Al final aparece resaltada la fila del instante X. El botón
+   **Exportar a Excel** baja esas mismas filas y las integraciones de Euler.
 5. Apretá **Detener simulación** para desbloquear los parámetros y poder
    correr una simulación nueva (también sirve para cortar una simulación muy
    larga antes de que termine sola).
@@ -69,8 +70,10 @@ source .venv/bin/activate
 python -m pytest -q
 ```
 
-Hay 15 tests que cubren el generador congruencial, las distribuciones
-(uniforme y exponencial), la integración de Euler y la cola FIFO.
+Hay 31 tests que cubren el generador congruencial, las distribuciones
+(uniforme y exponencial), la integración de Euler, la cola FIFO y el motor
+(P parametrizable, fila del instante X, cortes por X y por N, acumuladores
+y que 100.000 iteraciones corran en tiempo razonable).
 
 ## 6. Estructura del proyecto
 

@@ -40,10 +40,14 @@ class CalendarioEventos:
                 evento.cancelado = True
                 return
 
-    def proximos_nombres(self, cantidad: int = 3) -> list[str]:
-        """Nombres de los próximos eventos pendientes, para mostrar en la GUI."""
-        activos = sorted(e for e in self._heap if not e.cancelado)
-        return [f"{e.tipo.value} (t={e.tiempo:.2f})" for e in activos[:cantidad]]
+    def proximo_nombre(self) -> str:
+        """Nombre y hora del próximo evento pendiente, para mostrar en la GUI."""
+        activos = [e for e in self._heap if not e.cancelado]
+        if not activos:
+            return ""
+        e = min(activos)
+        sufijo = f" #{e.invitado_id}" if e.invitado_id is not None else ""
+        return f"{e.tipo.value}{sufijo} (t={e.tiempo:.2f})"
 
     @property
     def vacio(self) -> bool:

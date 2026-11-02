@@ -1,4 +1,4 @@
-"""Tabla compacta de los pasos de integración de Euler (t, D).
+"""Tabla de los pasos de integración de Euler (t, D, dD/dt, D siguiente).
 
 Se renderiza con `st.iframe` (mismo mecanismo que `tabla_vector_estado.py`):
 un documento HTML aislado con su propio `overflow-y: auto`, para que el
@@ -20,7 +20,13 @@ _TEXTO = "#10233f"
 
 def renderizar_tabla_integracion(pasos: list[PasoIntegracion], altura: int = 280) -> None:
     filas_html = "".join(
-        f"<tr><td>{escape(f'{paso.t:.3f}')}</td><td>{escape(f'{paso.d:.3f}')}</td></tr>" for paso in pasos
+        "<tr>"
+        + "".join(
+            f"<td>{escape(v)}</td>"
+            for v in (f"{paso.t:.3f}", f"{paso.d:.3f}", f"{paso.derivada:.3f}", f"{paso.d_siguiente:.3f}")
+        )
+        + "</tr>"
+        for paso in pasos
     )
     html = f"""
 <!doctype html>
@@ -41,7 +47,7 @@ def renderizar_tabla_integracion(pasos: list[PasoIntegracion], altura: int = 280
 <body>
   <div class="contenedor-integracion">
     <table class="tabla-integracion">
-      <thead><tr><th>t</th><th>D</th></tr></thead>
+      <thead><tr><th>t</th><th>D</th><th>dD/dt = P/5</th><th>D(t+h) = D + h·dD/dt</th></tr></thead>
       <tbody>{filas_html}</tbody>
     </table>
   </div>

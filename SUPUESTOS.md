@@ -40,6 +40,10 @@ como referencia para no contradecirnos en el código.
   derivado de `P` mediante integración numérica. No se le asocia un número
   aleatorio en el vector de estado, pero sí debe mostrarse la integración
   numérica realizada (consigna general del TP).
+- P es parametrizable (valores en rojo del enunciado) y se asigna a cada
+  invitado al crearlo según su tipo.
+- La comparación `D >= P` usa una tolerancia de 1e-9 para que el error de
+  redondeo de sumar `h·P/5` muchas veces no agregue un paso de más.
 - Nota matemática: al ser la tasa constante, analíticamente siempre da
   `t = 5` unidades de integración (= 50 min con la unidad por defecto de 10
   min), independientemente de si P=100 o P=70. Lo relevante para la consigna
@@ -58,6 +62,10 @@ como referencia para no contradecirnos en el código.
   entrevista, atendida por los 3 representantes, política FIFO.
 - Un invitado abandona la cola (se retira sin responder la encuesta) si espera
   más de 5 minutos sin ser atendido por un representante.
+- El porcentaje de invitados que se retiran sin encuesta se calcula sobre los
+  invitados que ya se retiraron (con o sin encuesta). Los que al terminar la
+  simulación siguen esperando o en entrevista no entran en la cuenta porque
+  todavía no se sabe cómo terminan.
 
 ## 7. Generador de números aleatorios
 
@@ -65,6 +73,13 @@ como referencia para no contradecirnos en el código.
   Constante aditiva=1221, Módulo=3922.
 - Es un único generador, compartido por todas las variables aleatorias del
   sistema (no uno por variable).
+
+## 7 bis. Período del generador
+
+- Con estos parámetros el generador repite la secuencia cada 468 números:
+  1221 y 3922 comparten el factor 37 y 1713 (a−1) no es divisible por 2, 37
+  ni 53, así que no cumple las condiciones de Hull–Dobell para período
+  completo. Son los parámetros fijados por la consigna; se mantienen.
 
 ## 8. Ocupantes por auto
 
@@ -92,7 +107,12 @@ como referencia para no contradecirnos en el código.
   enunciado es que "la integración numérica de la parte continua también
   debe ser mostrada en la aplicación", sin pedir una forma específica.
 - Vector de estado: se muestra en la interfaz **y** se puede exportar a Excel
-  (openpyxl, vía botón de descarga), ambas opciones habilitadas.
+  (openpyxl, vía botón de descarga), ambas opciones habilitadas. El Excel
+  exporta las filas visibles (i desde j + fila de X), no las 100.000, para
+  que la descarga sea liviana; incluye una hoja con las integraciones de
+  Euler de esos invitados.
+- Al cortar por tiempo se agrega una fila final con el reloj en X (sin
+  procesar eventos nuevos), y el tiempo ocioso de los operarios se cierra en X.
 
 ---
 *(Este archivo se va a seguir actualizando a medida que avancemos.)*
