@@ -56,10 +56,6 @@ def panel_parametros(disabled: bool = False) -> ParametrosSimulacion:
     )
     st.caption("Constante — integración numérica de Euler (dD/dt = P/5), no es variable aleatoria")
 
-    st.markdown("**Vista del vector de estado**")
-    filas_a_mostrar = st.number_input("Filas a mostrar (i)", min_value=1, value=100, step=1, disabled=disabled)
-    hora_inicio_vista = st.number_input("Hora desde la que mostrar (j)", min_value=0.0, value=0.0, disabled=disabled)
-
     return ParametrosSimulacion(
         tiempo_max=tiempo_max,
         iteraciones_max=int(iteraciones_max),
@@ -76,6 +72,4 @@ def panel_parametros(disabled: bool = False) -> ParametrosSimulacion:
         p_peaton=int(p_peaton),
         h_integracion=h_integracion,
         minutos_por_unidad_integracion=minutos_por_unidad_integracion,
-        filas_a_mostrar=int(filas_a_mostrar),
-        hora_inicio_vista=hora_inicio_vista,
     )

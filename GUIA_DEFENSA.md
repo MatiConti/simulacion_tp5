@@ -78,16 +78,21 @@ cerrada (`−media·ln(1−R)`), así que no hace falta aproximar nada.
 
 - **`Invitado`** (objeto temporal): tiene `tipo` (con auto / peatón),
   `estado` (en qué etapa está) y timestamps de cada etapa por la que pasó.
-  La propiedad `p` devuelve 100 o 70 según el tipo (se usa en la
-  integración de Euler).
+  El atributo `p` se asigna al crearlo desde los parámetros (por defecto 100
+  con auto, 70 peatón) y se usa en la integración de Euler. También guarda
+  el RND y el tiempo de su permanencia en sala, y la hora límite de espera
+  en la cola de entrevista (cuando la supera, abandona).
 - **`Operario`** y **`Representante`** (objetos permanentes): representan
-  los servidores de cada cola. `Operario` además acumula tiempo ocioso
+  los servidores de cada cola. Cada uno guarda a qué invitado atiende y
+  la hora de fin de su atención. `Operario` además acumula tiempo ocioso
   (para el objetivo 3 del TP).
 - **`Cola`**: FIFO genérica reutilizada para acreditación y entrevista; la
   de entrevista tiene `tiempo_paciencia` para el abandono.
 - **`FilaVectorEstado`**: una fila del vector de estado — todo lo que pide
-  la consigna general (evento, próximos eventos, objetos con sus atributos,
-  acumuladores, números aleatorios usados).
+  la consigna general: evento, próximos eventos (una columna por evento con
+  RND, tiempo generado y hora del próximo), objetos con sus atributos, colas
+  y acumuladores. El RND y el tiempo aparecen solo en la fila en que se
+  generan; las horas de los próximos eventos se arrastran.
 
 ## 5. Los eventos (`eventos/`)
 
@@ -144,6 +149,15 @@ El corte de la simulación (`motivo_corte`) puede ser por tres motivos:
 tiempo máximo alcanzado, iteraciones máximas alcanzadas, o detenido a mano
 — coincide con lo que pide la consigna ("lo que ocurra primero").
 
+Si corta por tiempo, se agrega una última fila `fin_simulacion (X)` con el
+reloj exactamente en X (la consigna pide la fila del instante X). Antes de
+la primera iteración hay una fila 0 de `inicializacion` con las primeras
+llegadas programadas.
+
+Para que 100.000 iteraciones corran rápido (~7 s), el motor guarda aparte
+los invitados que siguen en el sistema (`invitados_activos`) y en cada fila
+recorre solo esos, no todos los que pasaron por la simulación.
+
 ### Ejemplo para explicar paso a paso: un invitado con auto
 
 1. `llegada_invitado_auto`: se crea el `Invitado`, se programa su próxima
@@ -180,7 +194,9 @@ distribución, así que se interpretan como constantes.
 **Dato para lucirse:** como `dD/dt = P/5` es una tasa constante, la
 integración siempre da `t = 5` unidades (50 minutos) sea `P=100` o `P=70` —
 la duración de la entrevista termina siendo la misma para ambos tipos de
-invitado. No es un error: es consecuencia de que el enunciado define una
+invitado. (En el código se compara `D` contra `P` con una tolerancia de
+1e-9: sumar 1,4 cincuenta veces da 69,99999… por redondeo, y sin tolerancia
+el peatón hacía un paso de más y daba 51 min.) No es un error: es consecuencia de que el enunciado define una
 ecuación lineal, y lo confirmó la docente por mail (está citado en
 `SUPUESTOS.md`, punto 4).
 
@@ -189,12 +205,16 @@ ecuación lineal, y lo confirmó la docente por mail (está citado en
 1. **Máximo tiempo de permanencia en sala**: se actualiza en cada
    `fin_permanencia_sala`, comparando contra el máximo visto hasta ahora
    (`Acumuladores.registrar_tiempo_en_sala`).
-2. **% de invitados que abandonan sin encuesta**: `cantidad_abandonos /
-   cantidad_que_llegó_a_la_cola_de_entrevista × 100`.
+2. **% de invitados que se retiran sin encuesta**: `sin_encuesta /
+   (sin_encuesta + con_encuesta) × 100`, sobre los invitados que ya se
+   retiraron (los que al cortar siguen esperando o en entrevista todavía no
+   tienen resultado).
 3. **Tiempo ocioso promedio de los operarios**: cada `Operario` acumula su
    propio tiempo ocioso cada vez que pasa de libre a ocupado (compara el
    reloj actual contra la última vez que cambió de estado); al final de la
-   simulación se cierra la cuenta para el tiempo ocioso que quedó abierto.
+   simulación se cierra la cuenta para el tiempo ocioso que quedó abierto
+   (hasta X). Promedio = suma de los ocios / cantidad de operarios; también
+   se muestra como % del tiempo simulado.
 
 ## 9. La interfaz (`gui/` + `app.py`)
 
@@ -206,7 +226,10 @@ ecuación lineal, y lo confirmó la docente por mail (está citado en
   propio (no con los componentes nativos de Streamlit) y se muestran con
   `st.iframe`: así el encabezado puede quedar anclado (`position: sticky`)
   de forma confiable, con su propio scroll, sin pelearse con el resto de
-  la página.
+  la página. El encabezado tiene dos niveles (objeto / atributo).
+- **Excel**: exporta las mismas filas que se ven (i desde j + la fila de X)
+  y una segunda hoja con las integraciones de Euler de esos invitados,
+  identificadas por número de invitado.
 - **Simular / Detener simulación**: la simulación corre en un hilo aparte
   (`threading.Thread`) para que el botón "Detener" pueda interrumpirla a
   mitad de camino (le pasa un `threading.Event` que el motor chequea en

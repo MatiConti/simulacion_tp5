@@ -9,23 +9,32 @@ class FilaVectorEstado:
     """Estado completo del sistema en el instante en que ocurrió un evento.
 
     Se arma una instancia por cada evento procesado durante la simulación y
-    es lo que se muestra/exporta como vector de estado.
+    es lo que se muestra/exporta como vector de estado. Todo queda aplanado a
+    diccionarios para que sea directo mostrarlo en la tabla.
+
+    Los RND y tiempos generados aparecen solo en la fila en la que se
+    generaron (en las demás quedan vacíos); las horas de los próximos eventos
+    se arrastran mientras el evento siga pendiente.
     """
 
     numero_fila: int
     hora_simulada: float
     nombre_evento: str
-    proximos_eventos: list[str] = field(default_factory=list)
+    invitado_evento_id: int | None = None
+    proximo_evento: str = ""
+    es_fila_final: bool = False
 
-    # Estado de los objetos permanentes y temporales en este instante, ya
-    # aplanado a diccionarios para que sea directo mostrarlo en la tabla.
+    # Eventos de llegada: {"rnd", "tiempo", "proxima"}
+    llegada_auto: dict = field(default_factory=dict)
+    llegada_peaton: dict = field(default_factory=dict)
+
+    # Objetos permanentes
     operarios: dict[int, dict] = field(default_factory=dict)
     representantes: dict[int, dict] = field(default_factory=dict)
+    colas: dict[str, int] = field(default_factory=dict)
+
+    # Objetos temporales presentes en el sistema en este instante
     invitados: dict[int, dict] = field(default_factory=dict)
 
     # Variables auxiliares (acumuladores, contadores)
     acumuladores: dict[str, float] = field(default_factory=dict)
-
-    # Números aleatorios usados para las variables aleatorias de este evento,
-    # para trazabilidad (consigna: mostrar el RND usado en cada caso).
-    numeros_aleatorios: dict[str, float] = field(default_factory=dict)

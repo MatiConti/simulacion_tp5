@@ -21,18 +21,22 @@ class EstadoInvitado(Enum):
     RETIRADO_SIN_ENCUESTA = "retirado_sin_encuesta"
 
 
+ESTADOS_RETIRADO = (EstadoInvitado.RETIRADO_CON_ENCUESTA, EstadoInvitado.RETIRADO_SIN_ENCUESTA)
+
+
 @dataclass
 class Invitado:
     """Un invitado al evento de degustación.
 
-    P (usado en dD/dt = P/5 para la duración de la entrevista) queda
-    determinado por el tipo de invitado: 100 si llegó con auto, 70 si
-    llegó como peatón (ver SUPUESTOS.md, punto 4).
+    `p` (usado en dD/dt = P/5 para la duración de la entrevista) se asigna al
+    crearlo según el tipo de invitado y los parámetros de la simulación
+    (por defecto 100 con estacionamiento y 70 peatonal).
     """
 
     id: int
     tipo: TipoInvitado
     hora_llegada: float
+    p: float
     estado: EstadoInvitado = EstadoInvitado.ESPERANDO_ACREDITACION
 
     # Timestamps de cada etapa (se completan a medida que avanza en el sistema)
@@ -42,13 +46,13 @@ class Invitado:
     hora_inicio_sala: float | None = None
     hora_fin_sala: float | None = None
     hora_llegada_cola_entrevista: float | None = None
+    hora_limite_espera: float | None = None
     hora_inicio_entrevista: float | None = None
     hora_fin_entrevista: float | None = None
 
-    @property
-    def p(self) -> int:
-        """Valor de P usado en dD/dt = P/5 para la duración de la entrevista."""
-        return 100 if self.tipo is TipoInvitado.CON_AUTO else 70
+    # Variable aleatoria "permanencia en sala" de este invitado
+    rnd_permanencia_sala: float | None = None
+    tiempo_permanencia_sala: float | None = None
 
     @property
     def tiempo_en_sala(self) -> float | None:
@@ -63,3 +67,7 @@ class Invitado:
         if self.hora_llegada_cola_entrevista is None or self.hora_inicio_entrevista is None:
             return None
         return self.hora_inicio_entrevista - self.hora_llegada_cola_entrevista
+
+    @property
+    def retirado(self) -> bool:
+        return self.estado in ESTADOS_RETIRADO
